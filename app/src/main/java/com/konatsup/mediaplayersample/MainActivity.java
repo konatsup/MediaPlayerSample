@@ -1,24 +1,32 @@
 package com.konatsup.mediaplayersample;
 
-import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.PlaybackParams;
+import android.media.SoundPool;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView textView;
-    private MediaPlayer mediaPlayer;
-    private PlaybackParams params;
+    private SoundPool soundPool;
+    private int soundId;
+    private int soundResource = R.raw.snare;
     private float bpm;
+    private int count;
+    private int speed;
+
+    private Timer mTimer;
+    private Handler mHandler;
+    private long mDelay, mPeriod;
+
+    private Button startButton, stopButton;
+    private TextView textView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,90 +34,113 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         textView = (TextView) findViewById(R.id.textView);
+        startButton = (Button) findViewById(R.id.startButton);
+        stopButton = (Button) findViewById(R.id.stopButton);
+
+        soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+        soundId = soundPool.load(getApplicationContext(), soundResource, 0);
+
         bpm = 120;
-        params = new PlaybackParams();
+        speed = (int) (bpm / 120 * 50);
+        textView.setText(bpm + "");
 
-    }
+        mHandler = new Handler();
 
-    private boolean audioSetup() {
-        boolean fileCheck = false;
+        count = 0;
+        mDelay = 0;
+        mPeriod = 10; // 0.01秒ごとにhandler内のrun()を呼ぶように
 
-        // rawにファイルがある場合
-        mediaPlayer = MediaPlayer.create(this, R.raw.snare);
-        // 音量調整を端末のボタンに任せる
-        setVolumeControlStream(AudioManager.STREAM_MUSIC);
-        fileCheck = true;
-
-        return fileCheck;
-    }
-
-    private void audioPlay() {
-
-        if (mediaPlayer == null) {
-            // audio ファイルを読出し
-            if (audioSetup()) {
-                Toast.makeText(getApplication(), "Rread audio file", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(getApplication(), "Error: read audio file", Toast.LENGTH_SHORT).show();
-                return;
-            }
-        } else {
-            // 繰り返し再生する場合
-            mediaPlayer.stop();
-            mediaPlayer.reset();
-            // リソースの解放
-            mediaPlayer.release();
-        }
-        mediaPlayer.setLooping(true);
-        // 再生する
-        mediaPlayer.start();
-
-        // 終了を検知するリスナー
-        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        startButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCompletion(MediaPlayer mp) {
-                Log.d("debug", "end of audio");
-                audioStop();
+            public void onClick(View v) {
+                if (mTimer == null) {
+                    mTimer = new Timer(false);
+                    mTimer.scheduleAtFixedRate(new TimerTask() {
+                        @Override
+                        public void run() {
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    count++;
+                                    speed = (int) ((120f / bpm) * 50);
+                                    if (count % speed == 0) {
+                                        soundPool.play(soundId, 1.0f, 1.0f, 0, 0, 1.0f);
+                                    }
+                                }
+                            });
+                        }
+                    }, mDelay, mPeriod);
+                }
+            }
+            
+        });
+
+        stopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mTimer != null) {
+                    mTimer.cancel();
+                    mTimer = null;
+                }
+
             }
         });
+
+        startButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mTimer == null) {
+                    mTimer = new Timer(false);
+                    mTimer.scheduleAtFixedRate(new TimerTask() {
+                        @Override
+                        public void run() {
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    count++;
+                                    speed = (int) ((120f / bpm) * 50);
+                                    if (count % speed == 0) {
+                                        soundPool.play(soundId, 1.0f, 1.0f, 0, 0, 1.0f);
+                                    }
+                                }
+                            });
+
+                        }
+                    }, mDelay, mPeriod);
+                }
+            }
+        });
+
     }
 
-    private void audioStop() {
-        // 再生終了
-        mediaPlayer.stop();
-        // リセット
-        mediaPlayer.reset();
-        // リソースの解放
-        mediaPlayer.release();
-
-        mediaPlayer = null;
-    }
-
-
-    public void start(View v) {
-        audioPlay();
-        textView.setText(bpm + "");
-    }
-
-    public void stop(View v) {
-        if (mediaPlayer != null) {
-            // 音楽停止
-            audioStop();
-            textView.setText(bpm + "");
+    @Override
+    protected void onDestroy() {
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer = null;
         }
+        soundPool.release();
+        super.onDestroy();
     }
+
 
     public void up(View v) {
-        bpm += 10f;
-        params.setSpeed((float) bpm / 120f);
-        mediaPlayer.setPlaybackParams(params);
+        bpm += 1f;
         textView.setText(bpm + "");
     }
 
     public void down(View v) {
+        bpm -= 1f;
+        textView.setText(bpm + "");
+    }
+
+    public void up10(View v) {
+        bpm += 10f;
+        textView.setText(bpm + "");
+    }
+
+    public void down10(View v) {
         bpm -= 10f;
-        params.setSpeed((float) bpm / 120f);
-        mediaPlayer.setPlaybackParams(params);
         textView.setText(bpm + "");
     }
 
