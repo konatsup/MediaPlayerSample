@@ -1,0 +1,1 @@
+# MediaPlayerSample MediaPlayer使うと言ったなあれは嘘だ(SoundPoolを使ってます)
