@@ -1,1 +1,3 @@
-# MediaPlayerSample MediaPlayerä½¿ã†ã¨è¨€ã£ãŸãªã‚ã‚Œã¯å˜˜ã (SoundPoolã‚’ä½¿ã£ã¦ã¾ã™)
+# MediaPlayerSample 
+
+MediaPlayer‚ğg‚¤‚ÆŒ¾‚Á‚½‚ÈA‚ ‚ê‚Í‰R‚¾(SoundPool‚ğg‚Á‚Ä‚Ü‚·)
