@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -20,9 +21,9 @@ public class MainActivity extends AppCompatActivity {
     private int count;
     private int speed;
 
-    private Timer mTimer;
-    private Handler mHandler;
-    private long mDelay, mPeriod;
+    private Timer timer;
+    private Handler handler;
+    private long delay, period;
 
     private Button startButton, stopButton;
     private TextView textView;
@@ -44,21 +45,21 @@ public class MainActivity extends AppCompatActivity {
         speed = (int) (bpm / 120 * 50);
         textView.setText(bpm + "");
 
-        mHandler = new Handler();
+        handler = new Handler();
 
         count = 0;
-        mDelay = 0;
-        mPeriod = 10; // 0.01秒ごとにhandler内のrun()を呼ぶように
+        delay = 0;
+        period = 10; // 0.01秒ごとにhandler内のrun()を呼ぶように
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mTimer == null) {
-                    mTimer = new Timer(false);
-                    mTimer.scheduleAtFixedRate(new TimerTask() {
+                if (timer == null) {
+                    timer = new Timer(false);
+                    timer.scheduleAtFixedRate(new TimerTask() {
                         @Override
                         public void run() {
-                            mHandler.post(new Runnable() {
+                            handler.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     count++;
@@ -69,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
                         }
-                    }, mDelay, mPeriod);
+                    }, delay, period);
                 }
             }
 
@@ -78,9 +79,9 @@ public class MainActivity extends AppCompatActivity {
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mTimer != null) {
-                    mTimer.cancel();
-                    mTimer = null;
+                if (timer != null) {
+                    timer.cancel();
+                    timer = null;
                 }
 
             }
@@ -90,9 +91,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if (mTimer != null) {
-            mTimer.cancel();
-            mTimer = null;
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
         }
         soundPool.release();
         super.onDestroy();
