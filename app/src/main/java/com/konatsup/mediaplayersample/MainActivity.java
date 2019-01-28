@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
                     }, mDelay, mPeriod);
                 }
             }
-            
+
         });
 
         stopButton.setOnClickListener(new View.OnClickListener() {
@@ -83,31 +83,6 @@ public class MainActivity extends AppCompatActivity {
                     mTimer = null;
                 }
 
-            }
-        });
-
-        startButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mTimer == null) {
-                    mTimer = new Timer(false);
-                    mTimer.scheduleAtFixedRate(new TimerTask() {
-                        @Override
-                        public void run() {
-                            mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    count++;
-                                    speed = (int) ((120f / bpm) * 50);
-                                    if (count % speed == 0) {
-                                        soundPool.play(soundId, 1.0f, 1.0f, 0, 0, 1.0f);
-                                    }
-                                }
-                            });
-
-                        }
-                    }, mDelay, mPeriod);
-                }
             }
         });
 
